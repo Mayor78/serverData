@@ -1,0 +1,9 @@
+{
+    "version": 2,
+    "functions": {
+      "admin/server.js": {
+        "runtime": "nodejs14.x"
+      }
+    }
+  }
+  
