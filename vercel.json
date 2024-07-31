@@ -1,16 +1,16 @@
-
-  
-
-
-
-  {
-    "version":2,
-    "builds":[
-        {
-            "src":"/admin/server.js", "use": "@vercel/node"}
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "admin/server.js",
+        "use": "@vercel/node"
+      }
     ],
     "routes": [
-        {"src":"/(.*)",
-        "dest":"/admin/server.js"}
+      {
+        "src": "/api/(.*)",
+        "dest": "/admin/server.js"
+      }
     ]
-}
+  }
+  
