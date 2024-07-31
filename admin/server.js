@@ -1,10 +1,10 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import serverless from 'serverless-http';
-import http from 'http';
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const http = require('http');
 
 const app = express();
 app.use(express.json());
@@ -12,6 +12,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true
 }));
+
+const server = http.createServer(app);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -50,7 +52,7 @@ const Order = mongoose.model('Order', orderSchema);
 // SSE setup
 let clients = [];
 
-app.get('/api/events', (req, res) => {
+app.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -95,7 +97,7 @@ app.post('/api/users/signup', async (req, res) => {
 });
 
 // Login Route
-app.post('/api/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -118,7 +120,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Logout Route
-app.post('/api/logout', (req, res) => {
+app.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
@@ -193,7 +195,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
 });
 
 // API Routes
-app.get('/api/orders', authenticateToken, async (req, res) => {
+app.get('/orders', authenticateToken, async (req, res) => {
   try {
     const userId = req.userId;
     const userRole = req.userRole;
@@ -215,7 +217,7 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/users', authenticateToken, authenticateAdmin, async (req, res) => {
+app.get('/users', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const users = await User.find().populate('orders');
     res.json(users);
@@ -224,7 +226,7 @@ app.get('/api/users', authenticateToken, authenticateAdmin, async (req, res) => 
   }
 });
 
-app.post('/api/orders/:id/confirm', authenticateToken, authenticateAdmin, async (req, res) => {
+app.post('/orders/:id/confirm', authenticateToken, authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   const { deliveryDate } = req.body;
 
@@ -247,7 +249,7 @@ app.post('/api/orders/:id/confirm', authenticateToken, authenticateAdmin, async 
 });
 
 // Deliver an Order
-app.post('/api/orders/:orderId/deliver', authenticateToken, authenticateAdmin, async (req, res) => {
+app.post('/orders/:orderId/deliver', authenticateToken, authenticateAdmin, async (req, res) => {
   const { orderId } = req.params;
 
   try {
@@ -268,7 +270,7 @@ app.post('/api/orders/:orderId/deliver', authenticateToken, authenticateAdmin, a
 });
 
 // Create an Order
-app.post('/api/orders', authenticateToken, async (req, res) => {
+app.post('/orders', authenticateToken, async (req, res) => {
   const { date, totalPrice, products } = req.body;
   const userId = req.userId;
 
@@ -296,6 +298,6 @@ app.post('/api/orders', authenticateToken, async (req, res) => {
   }
 });
 
-// Serverless handler
-const handler = serverless(app);
-export default handler;
+server.listen(process.env.PORT || 5000, () => {
+  console.log(`Server running on port ${process.env.PORT || 5000}`);
+});
